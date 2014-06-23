@@ -16,13 +16,16 @@
 
 package net.openhft.lang.io.serialization.impl;
 
+import net.openhft.lang.io.Bytes;
 import net.openhft.lang.io.serialization.BytesMarshallable;
 import net.openhft.lang.io.serialization.BytesMarshaller;
 import net.openhft.lang.io.serialization.BytesMarshallerFactory;
 import net.openhft.lang.io.serialization.CompactBytesMarshaller;
 import net.openhft.lang.model.constraints.NotNull;
 
-import java.io.*;
+import java.io.Externalizable;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,8 +34,6 @@ import java.util.Map;
  * @author peter.lawrey
  */
 public class VanillaBytesMarshallerFactory implements BytesMarshallerFactory {
-
-    public static ObjectStreamFactory defaultOSFactory = new JDKSerialization();
 
     private Map<Class, BytesMarshaller> marshallerMap;
     private BytesMarshaller[] compactMarshallerMap;
@@ -87,12 +88,20 @@ public class VanillaBytesMarshallerFactory implements BytesMarshallerFactory {
     }
 
     @Override
-    public ObjectOutput getObjectOutput(OutputStream out) throws IOException {
-        return defaultOSFactory.getObjectOutput(out);
+    public void writeSerializable(Bytes bytes, Object obj) {
+        try {
+            new ObjectOutputStream(bytes.outputStream()).writeObject(obj);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
-    public ObjectInput getObjectInput(InputStream in) throws IOException {
-        return defaultOSFactory.getObjectInput(in);
+    public Object readSerializable(Bytes bytes) {
+        try {
+            return new ObjectInputStream(bytes.inputStream()).readObject();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
