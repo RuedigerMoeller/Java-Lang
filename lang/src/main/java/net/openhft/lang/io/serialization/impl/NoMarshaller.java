@@ -24,7 +24,8 @@ import net.openhft.lang.io.serialization.BytesMarshaller;
  * Templates.
  */
 public enum NoMarshaller implements BytesMarshaller<Void> {
-    INSTANCE;
+    INSTANCE,
+    DISABLED;
 
     @Override
     public void write(Bytes bytes, Void aVoid) {

@@ -1930,19 +1930,21 @@ public abstract class AbstractBytes implements Bytes {
         Class<?> clazz = obj.getClass();
         final BytesMarshallerFactory bytesMarshallerFactory = bytesMarshallerFactory();
         BytesMarshaller em = bytesMarshallerFactory.acquireMarshaller(clazz, false);
-        if (em == NoMarshaller.INSTANCE && autoGenerateMarshaller(obj))
-            em = bytesMarshallerFactory.acquireMarshaller(clazz, true);
+        if ( em != NoMarshaller.DISABLED ) {
+            if (em == NoMarshaller.INSTANCE && autoGenerateMarshaller(obj))
+                em = bytesMarshallerFactory.acquireMarshaller(clazz, true);
 
-        if (em != NoMarshaller.INSTANCE) {
-            if (em instanceof CompactBytesMarshaller) {
-                writeByte(((CompactBytesMarshaller) em).code());
+            if (em != NoMarshaller.INSTANCE) {
+                if (em instanceof CompactBytesMarshaller) {
+                    writeByte(((CompactBytesMarshaller) em).code());
+                    em.write(this, obj);
+                    return;
+                }
+                writeByte(ENUMED);
+                writeEnum(clazz);
                 em.write(this, obj);
                 return;
             }
-            writeByte(ENUMED);
-            writeEnum(clazz);
-            em.write(this, obj);
-            return;
         }
         writeByte(SERIALIZED);
         // TODO this is the lame implementation, but it works.
